@@ -38,3 +38,60 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/pages/building-your-application/deploying) for more details.
+
+## There was an issue where the service workers exceeded the maximum number of file watchers
+### ✅ Solution: Modify next.config.mjs to Optimize File Watching
+Modify your next.config.mjs to include Webpack's watchOptions to prevent excessive file watching:
+
+Updated next.config.mjs
+js
+Copy
+Edit
+import withPWAInit from "@ducanh2912/next-pwa";
+
+/** @type {import('next').NextConfig} */
+
+const withPWA = withPWAInit({
+  dest: "public",
+});
+
+const nextConfig = {
+  reactStrictMode: true,
+  images: {
+    domains: ["m.media-amazon.com"],
+  },
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      config.watchOptions = {
+        ignored: /node_modules/,
+        poll: 1000, // Reduce CPU usage
+      };
+    }
+    return config;
+  },
+};
+
+export default withPWA({
+  ...nextConfig,
+});
+🛠️ Additional Fixes if the Issue Persists
+1️⃣ Increase System File Watchers Limit (Linux)
+Run the following command:
+
+bash
+Copy
+Edit
+sudo sysctl fs.inotify.max_user_watches=524288
+sudo sysctl -p
+To make it permanent, add this line to /etc/sysctl.conf:
+
+bash
+Copy
+Edit
+fs.inotify.max_user_watches=524288
+Then apply:
+
+bash
+Copy
+Edit
+sudo sysctl -p
